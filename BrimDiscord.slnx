@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/Discord/Discord.csproj" />
+  <Project Path="tests/Discord.Tests/Discord.Tests.csproj" />
+</Solution>
