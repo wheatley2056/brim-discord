@@ -1,0 +1,24 @@
+{
+  "id": "de.brim.discord",
+  "name": "Discord",
+  "version": "1.0.0",
+  "entry": "BrimDiscord.exe",
+  "api": "1",
+  "slots": ["compact.leading", "compact.trailing", "hud"],
+  "permissions": ["notifications", "network"],
+  "optionalPermissions": ["overlay"],
+  "notificationApps": ["Discord"],
+  "widgets": [
+    {"id": "voice", "name": "Discord-Sprachkanal", "description": "Wer im Sprachkanal ist und spricht, mit Stumm, Taub und Auflegen", "glyph": "\uE720", "sizes": ["medium", "small", "large", "wide"]},
+    {"id": "messages", "name": "Discord-Nachrichten", "description": "Die neuesten Nachrichten und Erwähnungen; ein Klick öffnet Discord", "glyph": "\uE8BD", "sizes": ["large", "medium", "wide", "full"]}
+  ],
+  "settings": [
+    {"key": "messages", "type": "bool", "label": "Neue Nachrichten in der Notch zählen", "default": true},
+    {"key": "popup", "type": "bool", "label": "Neue Nachricht kurz in der Notch einblenden", "default": true},
+    {"key": "voice", "type": "bool", "label": "Sprachkanal in der Notch zeigen (braucht Client-ID und Secret)", "default": true},
+    {"key": "clientId", "type": "string", "label": "Client-ID deiner Discord-App (siehe Anleitung im Repository)", "default": ""},
+    {"key": "clientSecret", "type": "password", "label": "Client-Secret deiner Discord-App", "default": ""},
+    {"key": "glow", "type": "bool", "label": "Lichtschein, wenn jemand spricht", "default": true},
+    {"key": "overlay", "type": "bool", "label": "Wer spricht, als kleine Pille über Spielen im Vollbild", "default": true}
+  ]
+}

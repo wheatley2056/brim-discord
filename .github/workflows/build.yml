@@ -1,0 +1,83 @@
+# Bauen und testen; bei einem Tag v<Version> den fertigen Plugin-Ordner als Release-Zip anhängen
+# (für die Plugin-Bibliothek von Brim, siehe catalog/ im Brim-Repository). Von Hand gestartet mit
+# „release“ legt der Lauf Tag und Release v<Version aus plugin.json> selbst an.
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Release v<Version aus plugin.json> anlegen"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: brim-discord
+
+      # Das Plugin baut gegen Brim.Sdk aus dem Brim-Repository, das daneben liegt.
+      - uses: actions/checkout@v4
+        with:
+          repository: wheatley2056/brim
+          ref: main
+          path: brim
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Tests
+        working-directory: brim-discord
+        run: dotnet test tests/Discord.Tests -c Release
+
+      - name: Plugin-Ordner bauen
+        working-directory: brim-discord
+        run: dotnet publish src/Discord -c Release -r win-x64 --self-contained false -o artifacts/discord
+
+      # Tag und Version im plugin.json müssen gleich sein, sonst lehnt die Bibliothek das Zip ab.
+      - name: Version prüfen
+        if: startsWith(github.ref, 'refs/tags/v')
+        working-directory: brim-discord
+        shell: pwsh
+        run: |
+          $version = (Get-Content artifacts/discord/plugin.json -Raw | ConvertFrom-Json).version
+          if ("v$version" -ne "${{ github.ref_name }}") { throw "plugin.json hat Version $version, der Tag ist ${{ github.ref_name }}" }
+
+      - name: Zip
+        working-directory: brim-discord
+        shell: pwsh
+        run: Compress-Archive -Path artifacts/discord/* -DestinationPath artifacts/brim-discord.zip -Force
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: brim-discord
+          path: brim-discord/artifacts/brim-discord.zip
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        working-directory: brim-discord
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "${{ github.ref_name }}" artifacts/brim-discord.zip --title "Discord-Plugin ${{ github.ref_name }}" --generate-notes
+
+      - name: Release (von Hand)
+        if: github.event_name == 'workflow_dispatch' && inputs.release
+        working-directory: brim-discord
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $version = (Get-Content artifacts/discord/plugin.json -Raw | ConvertFrom-Json).version
+          gh release create "v$version" artifacts/brim-discord.zip --target "${{ github.sha }}" --title "Discord-Plugin v$version" --generate-notes

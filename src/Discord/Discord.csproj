@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Discord-Plugin für Brim: Sprachkanal in der Notch (wer spricht, Stumm, Taub, Auflegen) über die lokale RPC-Schnittstelle
+    des Discord-Clients, dazu Discord-Nachrichten aus den Windows-Benachrichtigungen. Build-Ausgabe ist der fertige
+    Plugin-Ordner.
+  -->
+  <PropertyGroup>
+    <!-- Kein Konsolenfenster, wenn Brim das Plugin startet; stdout/stderr landen trotzdem im Plugin-Log. -->
+    <OutputType>WinExe</OutputType>
+    <!-- Named Pipes und HTTP, kein Win32: läuft und testet auch außerhalb von Windows. -->
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>BrimDiscord</AssemblyName>
+    <RootNamespace>Brim.Discord</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(BrimRoot)\src\Brim.Sdk\Brim.Sdk.csproj" />
+    <!-- Schützt das gespeicherte Discord-Token mit DPAPI (nur Windows). -->
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="plugin.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
